@@ -5,6 +5,7 @@ import {
   BehaviorSubject,
   catchError,
   distinctUntilChanged,
+  from,
   map,
   of,
   type Subscription,
@@ -14,6 +15,7 @@ import {
 import {
   type Annotation,
   type Chunk,
+  getDraftId,
   type SelectionState,
   type TimelineController,
   useHistoryStore,
@@ -23,6 +25,7 @@ import {useClient} from '../../../hooks'
 import {DEFAULT_STUDIO_CLIENT_OPTIONS} from '../../../studioClient'
 import {remoteSnapshots, type RemoteSnapshotVersionEvent} from '../document'
 import {fetchFeatureToggle} from '../document/document-pair/utils/fetchFeatureToggle'
+import {useObservable} from 'react-rx'
 
 interface UseTimelineControllerOpts {
   documentId: string
@@ -104,6 +107,12 @@ export function useTimelineStore({
   const client = useClient(DEFAULT_STUDIO_CLIENT_OPTIONS)
   const workspace = useWorkspace()
 
+  const transactions$ = useMemo(() => {
+    return from(historyStore.getTransactions([documentId, getDraftId(documentId)]))
+  }, [historyStore, documentId])
+
+  const transactions = useObservable(transactions$)
+  console.log('transactions', transactions)
   /**
    * The mutable TimelineController, used internally
    */

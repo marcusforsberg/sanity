@@ -122,13 +122,24 @@ const getTimelineController = ({
   })
 }
 
+// TODO: This is not used, remove it?
 const getTransactions = async (
   client: SanityClient,
   documentIds: string | string[],
 ): Promise<TransactionLogEventWithMutations[]> => {
   const ids = Array.isArray(documentIds) ? documentIds : [documentIds]
   const dataset = client.config().dataset
-  const query = {excludeContent: 'true', includeIdentifiedDocumentsOnly: 'true'}
+  // https://www.sanity.io/docs/history-api#45ac5eece4ca
+  const query = {
+    excludeContent: 'true',
+    includeIdentifiedDocumentsOnly: 'true',
+    tag: 'sanity.studio.structure.transactions',
+    effectFormat: 'mendoza',
+    excludeMutations: 'true',
+    reverse: 'true',
+    limit: '50',
+  }
+
   const url = `/data/history/${dataset}/transactions/${ids.join(',')}`
   const result = await client.request({url, query})
   const transactions = result
