@@ -164,13 +164,18 @@ export const documentVersionEventTypes = [
   'document.updateLive',
 ] as const
 
+export type DocumentVersionEventType = (typeof documentVersionEventTypes)[number]
+
 /**
  * A generic event with a type and a timestamp.
  */
 interface BaseEvent {
+  /**
+   * The id of the transaction that generated this event, is the same as the `_rev` the documents that were affected by this event will have.
+   **/
+  id: string
   type: (typeof documentVersionEventTypes)[number]
   timestamp: string
-
   // Moved author to baseEvent.
   author: string
 }

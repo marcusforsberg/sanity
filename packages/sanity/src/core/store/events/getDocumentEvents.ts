@@ -95,6 +95,7 @@ function getEventFromTransaction(
   previousTransactions: Transaction[],
 ): DocumentGroupEvent | null {
   const base = {
+    id: transaction.id,
     timestamp: transaction.timestamp,
     author: transaction.author,
   }
