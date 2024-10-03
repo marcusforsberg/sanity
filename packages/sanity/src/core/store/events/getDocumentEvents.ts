@@ -1,7 +1,11 @@
-import {type MendozaEffectPair, type MendozaPatch} from '@sanity/types'
+import {
+  type MendozaEffectPair,
+  type MendozaPatch,
+  type TransactionLogEventWithEffects,
+} from '@sanity/types'
 
 import {getDraftId, getPublishedId, getVersionFromId} from '../../util/draftUtils'
-import {type DocumentGroupEvent, documentVersionEventTypes, type Transaction} from './types'
+import {type DocumentGroupEvent, documentVersionEventTypes} from './types'
 
 type EffectState = 'unedited' | 'deleted' | 'upsert' | 'created'
 
@@ -91,8 +95,8 @@ function isDeletePatch(patch: MendozaPatch): boolean {
 // This assumes the view is from the publishedDocument having only drafts. (Versions are not yet supported here)
 function getEventFromTransaction(
   documentId: string,
-  transaction: Transaction,
-  previousTransactions: Transaction[],
+  transaction: TransactionLogEventWithEffects,
+  previousTransactions: TransactionLogEventWithEffects[],
 ): DocumentGroupEvent | null {
   const base = {
     id: transaction.id,
@@ -306,7 +310,7 @@ const isDocumentGroupEvent = (event: unknown): event is DocumentGroupEvent => {
  */
 export function getDocumentEvents(
   documentId: string,
-  transactions: Transaction[],
+  transactions: TransactionLogEventWithEffects[],
 ): DocumentGroupEvent[] {
   const events = transactions
     .map((transaction, index) => {

@@ -1,4 +1,5 @@
 import {describe, expect, it} from '@jest/globals'
+import {type TransactionLogEventWithEffects} from '@sanity/types'
 
 import {getDocumentEvents} from './getDocumentEvents'
 import {
@@ -9,7 +10,6 @@ import {
   type DocumentGroupEvent,
   type EditDocumentVersionEvent,
   type PublishDocumentVersionEvent,
-  type Transaction,
   type UpdateLiveDocumentEvent,
 } from './types'
 
@@ -56,7 +56,7 @@ describe('getDocumentEvents', () => {
   })
   describe('document.editVersion ', () => {
     it('edits an existing draft', () => {
-      const transactions: Transaction[] = [
+      const transactions: TransactionLogEventWithEffects[] = [
         {
           id: 'edit-draft-tx-1',
           timestamp: '2024-10-01T08:20:39.328125Z',
@@ -84,7 +84,7 @@ describe('getDocumentEvents', () => {
     })
     it('edits an existing draft multiple times within the time window, they are grouped', () => {
       // TODO: Confirm this is the expected behavior
-      const transactions: Transaction[] = [
+      const transactions: TransactionLogEventWithEffects[] = [
         {
           id: 'edit-draft-tx-3',
           timestamp: '2024-10-01T08:20:40.759147Z',
@@ -250,7 +250,7 @@ describe('getDocumentEvents', () => {
       ])
     })
     it('deletes a draft (discard changes), published version exists', () => {
-      const transactions: Transaction[] = [
+      const transactions: TransactionLogEventWithEffects[] = [
         {
           id: 'discard-changes-tx',
           timestamp: '2024-09-30T16:04:31.096045Z',
@@ -401,7 +401,7 @@ describe('getDocumentEvents', () => {
   describe('document.publishVersion', () => {
     describe('draft version', () => {
       it('publishes a draft', () => {
-        const transactions: Transaction[] = [
+        const transactions: TransactionLogEventWithEffects[] = [
           {
             id: 'publish-tx',
             timestamp: '2024-09-30T14:00:55.540022Z',
@@ -517,7 +517,7 @@ describe('getDocumentEvents', () => {
   })
   describe('document.unpublish', () => {
     it('unpublishes a document, no draft exists', () => {
-      const transactions: Transaction[] = [
+      const transactions: TransactionLogEventWithEffects[] = [
         {
           id: 'unpublish-tx',
           timestamp: '2024-09-30T14:40:02.837538Z',
@@ -643,7 +643,7 @@ describe('getDocumentEvents', () => {
       ])
     })
     it('unpublishes a document, draft exists', () => {
-      const transactions: Transaction[] = [
+      const transactions: TransactionLogEventWithEffects[] = [
         {
           id: 'unpublish-document-tx',
           timestamp: '2024-09-30T15:04:37.077740Z',
@@ -842,7 +842,7 @@ describe('getDocumentEvents', () => {
     it('deletes a group - only published doc exists', () => {
       // TODO: How to distinguish this from from a unpublish transaction if the draft exists.
       // They do the same type of operation given the draft is "unedited" it'
-      const transactions: Transaction[] = [
+      const transactions: TransactionLogEventWithEffects[] = [
         {
           id: 'NQAO7ykovR2JyvCJEXET8v',
           timestamp: '2024-10-01T09:13:02.083217Z',
@@ -924,7 +924,7 @@ describe('getDocumentEvents', () => {
     it('deletes a group - only draft doc exists', () => {
       // TODO: Confirm we want to have a type: document.deleteVersion in this case
       // This uses the discard action
-      const transactions: Transaction[] = [
+      const transactions: TransactionLogEventWithEffects[] = [
         {
           id: 'NQAO7ykovR2JyvCJEXQZNp',
           timestamp: '2024-10-01T10:19:35.130918Z',
@@ -1022,7 +1022,7 @@ describe('getDocumentEvents', () => {
 
   describe('document.createLive', () => {
     it('creates a live document', () => {
-      const transactions: Transaction[] = [
+      const transactions: TransactionLogEventWithEffects[] = [
         {
           id: 'create-live-doc-tx',
           timestamp: '2024-09-30T16:15:06.436356Z',
@@ -1059,7 +1059,7 @@ describe('getDocumentEvents', () => {
   })
   describe('document.updateLive', () => {
     it('updates a live document', () => {
-      const transactions: Transaction[] = [
+      const transactions: TransactionLogEventWithEffects[] = [
         {
           id: 'update-live-doc-tx',
           timestamp: '2024-09-30T16:22:37.797887Z',
@@ -1117,7 +1117,7 @@ describe('getDocumentEvents', () => {
   })
   describe('a long chain of transactions, imitating documents lifecycle', () => {
     it('creates a draft document, adds some edits, publishes the document, updates the draft and publishes again, then the group is removed', () => {
-      const transactions: Transaction[] = [
+      const transactions: TransactionLogEventWithEffects[] = [
         {
           id: '7X3uqAgvtaInRcPnekUfOB',
           timestamp: '2024-10-01T13:50:40.265737Z',
@@ -1558,7 +1558,7 @@ describe('getDocumentEvents', () => {
       expect(events).toEqual(expectedEvents)
     })
     it('creates a draft document, adds some edits, publishes the doc, then the document is unpublished, draft is removed, finally draft is restored', () => {
-      const transactions: Transaction[] = [
+      const transactions: TransactionLogEventWithEffects[] = [
         {
           id: 'NQAO7ykovR2JyvCJEYUfaz',
           timestamp: '2024-10-01T13:57:18.716920Z',
@@ -1786,7 +1786,7 @@ describe('getDocumentEvents', () => {
       expect(events).toEqual(expectedEvents)
     })
     it('creates a live editable document and do edits on it, then it is removed', () => {
-      const transactions: Transaction[] = [
+      const transactions: TransactionLogEventWithEffects[] = [
         {
           id: '7X3uqAgvtaInRcPnekknt5',
           timestamp: '2024-10-01T14:18:42.658609Z',

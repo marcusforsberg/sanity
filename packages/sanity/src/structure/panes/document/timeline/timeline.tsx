@@ -1,24 +1,19 @@
 import {Box, Text} from '@sanity/ui'
 import {useCallback, useEffect, useMemo, useState} from 'react'
-import {
-  type Chunk,
-  CommandList,
-  type CommandListRenderItemCallback,
-  LoadingBlock,
-  useTranslation,
-} from 'sanity'
+import {CommandList, type CommandListRenderItemCallback, LoadingBlock, useTranslation} from 'sanity'
 
+import {type DocumentGroupEvent} from '../../../../core/store/events/types'
 import {ExpandableTimelineItemMenu} from './expandableTimelineItemMenu'
 import {ListWrapper, Root, StackWrapper} from './timeline.styled'
 import {TimelineItem} from './timelineItem'
 import {addChunksMetadata, isNonPublishChunk, isPublishChunk} from './utils'
 
 interface TimelineProps {
-  chunks: Chunk[]
+  chunks: DocumentGroupEvent[]
   hasMoreChunks: boolean | null
-  lastChunk?: Chunk | null
+  lastChunk?: DocumentGroupEvent | null
   onLoadMore: () => void
-  onSelect: (chunk: Chunk) => void
+  onSelect: (chunk: DocumentGroupEvent) => void
   /**
    * The list needs a predefined max height for the scroller to work.
    */
@@ -44,8 +39,8 @@ export const Timeline = ({
     if (selectedChunkId) {
       // If the selected chunk is a draft, we need to expand its parent
       const selected = chunksWithMetadata.find((chunk) => chunk.id === selectedChunkId)
-      if (selected && isNonPublishChunk(selected) && selected.parentId) {
-        return new Set([selected.parentId])
+      if (selected && isNonPublishChunk(selected) && selected.metadata.parentId) {
+        return new Set([selected.metadata.parentId])
       }
     }
     return new Set()
@@ -53,9 +48,9 @@ export const Timeline = ({
 
   const filteredChunks = useMemo(() => {
     return chunksWithMetadata.filter((chunk) => {
-      if (isPublishChunk(chunk) || !chunk.parentId) return true
+      if (isPublishChunk(chunk) || !chunk.metadata.parentId) return true
       // If the chunk has a parent id keep it hidden until the parent is expanded.
-      return expandedParents.has(chunk.parentId)
+      return expandedParents.has(chunk.metadata.parentId)
     })
   }, [chunksWithMetadata, expandedParents])
 
@@ -71,6 +66,20 @@ export const Timeline = ({
       }),
     [],
   )
+  useEffect(() => {
+    if (selectedChunkId) {
+      const selected = chunksWithMetadata.find((chunk) => chunk.id === selectedChunkId)
+      if (selected?.metadata.parentId) {
+        const parentId = selected.metadata.parentId
+        setExpandedParents((prev) => {
+          const next = new Set(prev)
+          if (!prev.has(parentId)) next.add(parentId)
+
+          return next
+        })
+      }
+    }
+  }, [chunksWithMetadata, handleExpandParent, selectedChunkId])
 
   const selectedIndex = useMemo(
     () =>
@@ -87,15 +96,15 @@ export const Timeline = ({
           paddingBottom={1}
           paddingTop={isFirst ? 1 : 0}
           paddingRight={1}
-          paddingLeft={isNonPublishChunk(chunk) && chunk.parentId ? 4 : 1}
+          paddingLeft={isNonPublishChunk(chunk) && chunk.metadata.parentId ? 4 : 1}
         >
           <TimelineItem
             chunk={chunk}
             isSelected={selectedChunkId === chunk.id}
             onSelect={onSelect}
-            collaborators={isPublishChunk(chunk) ? chunk.collaborators : undefined}
+            collaborators={isPublishChunk(chunk) ? chunk.metadata.collaborators : undefined}
             optionsMenu={
-              isPublishChunk(chunk) && chunk.children.length > 0 ? (
+              isPublishChunk(chunk) && chunk.metadata.children.length > 0 ? (
                 <ExpandableTimelineItemMenu
                   chunkId={chunk.id}
                   isExpanded={expandedParents.has(chunk.id)}
